@@ -15,6 +15,7 @@ public class project{
       /** set up UDP socket **/
       try{
          sSock = new DatagramSocket(8888); //new socket with port 8888
+         sSock.setSoTimeout(2000);
       } catch(Exception e){};
       recData = new byte[1024];
       sendData = new byte[1024]; //might need to change
@@ -22,6 +23,7 @@ public class project{
       /** test values **/
       String status = "wait";
       String fileName = "Enter Address here";
+      String packet;
 
       /** open file **/
 
@@ -30,10 +32,14 @@ public class project{
       while(true){
          //get packet value
          DatagramPacket recPacket = new DatagramPacket(recData, recData.length);
+
          try{
             sSock.receive(recPacket);
-         } catch(Exception e){};
-         String packet = new String(recPacket.getData());
+            packet = new String(recPacket.getData());
+         } catch(Exception e){
+            packet = "timeout";
+         }
+
          System.out.println("Packet is: " + packet);
 
          //get address and port of client
@@ -51,7 +57,7 @@ public class project{
             //close file
             sendFile(fileName);
             //open file
-         } else if(packet == "4"){ //timeout
+         } else if(packet == "timeout"){ //timeout
             if(status == "run"){
                getData();
             }
