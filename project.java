@@ -1,27 +1,57 @@
 import java.time.LocalDateTime;
+import java.io.*;
+import java.net.*;
 
 public class project{
+
+   private static InetAddress clientIPAddress;
+   private static int clientPort;
+   private static byte[] recData;
+   private static byte[] sendData;
+   private static DatagramSocket sSock;
+
    public static void main(String[] args){
-      int packet;
+
+      /** set up UDP socket **/
+      try{
+         sSock = new DatagramSocket(8888); //new socket with port 8888
+      } catch(Exception e){};
+      recData = new byte[1024];
+      sendData = new byte[1024]; //might need to change
+
+      /** test values **/
       String status = "wait";
       String fileName = "Enter Address here";
 
-      //open file
+      /** open file **/
 
-      while(1){
+
+      /** main loop **/
+      while(true){
          //get packet value
-         packet = 3; //temp
+         DatagramPacket recPacket = new DatagramPacket(recData, recData.length);
+         try{
+            sSock.receive(recPacket);
+         } catch(Exception e){};
+         String packet = new String(recPacket.getData());
+         System.out.println("Packet is: " + packet);
 
-         if(packet == 0){ //loop
+         //get address and port of client
+         clientIPAddress = recPacket.getAddress();
+         clientPort = recPacket.getPort();
+
+         //packet = 3; //temp
+
+         if(packet == "loop"){ //loop
             status = "run";
             getData();
-         } else if(packet == 1){ //kill
+         } else if(packet == "kill"){ //kill
             status = "wait";
-         } else if(packet == 2){ //sendFile
+         } else if(packet == "sendFile"){ //sendFile
             //close file
             sendFile(fileName);
             //open file
-         } else if(packet == 4){ //timeout
+         } else if(packet == "4"){ //timeout
             if(status == "run"){
                getData();
             }
@@ -29,29 +59,35 @@ public class project{
       }
    }
 
-   public static void getData(){
-      int color;
-      int data;
+   private static void getData(){
+      String color;
+      int data = 0;
 
       //get data
       if(data < 5){
-         color = 0; //red
+         color = "red"; //red
       } else if (data < 10){
-         color = 1; //yellow
+         color = "yellow"; //yellow
       } else {
-         color = 2; //green
+         color = "green"; //green
       }
       //send color
+      sendData = color.getBytes();
+      DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, clientIPAddress, clientPort);
+      try{
+         sSock.send(sendPacket);
+      } catch(Exception e){};
+
       String stamped = addStamp(data);
       //save stamped
 
    }
 
-   public static void sendFile(String fName){
+   private static void sendFile(String fName){
       //send file
    }
 
-   public static String addStamp(int d){
+   private static String addStamp(int d){
       String s = Integer.toString(d) + " - " + LocalDateTime.now();
       return s;
    }
