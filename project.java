@@ -9,6 +9,8 @@ public class project{
    private static byte[] recData;
    private static byte[] sendData;
    private static DatagramSocket sSock;
+   private static String fileName = "Enter File Address here"; //change to where file is to be saved
+   private static FileWriter fWrite;
 
    public static void main(String[] args){
 
@@ -22,11 +24,12 @@ public class project{
 
       /** test values **/
       String status = "wait";
-      String fileName = "Enter Address here";
       String packet;
 
       /** open file **/
-
+      try{
+         fWrite = new FileWriter(fileName, true);
+      } catch(Exception e){};
 
       /** main loop **/
       while(true){
@@ -52,6 +55,9 @@ public class project{
             status = "run";
             getData();
          } else if(packet == "kill"){ //kill
+            try{
+               fWrite.close();
+            } catch(Exception e){};
             status = "wait";
          } else if(packet == "sendFile"){ //sendFile
             //close file
@@ -85,6 +91,9 @@ public class project{
       } catch(Exception e){};
 
       String stamped = addStamp(data);
+      try{
+         fWrite.write(stamped);
+      } catch(Exception e){};
       //save stamped
 
    }
