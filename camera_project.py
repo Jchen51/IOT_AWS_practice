@@ -1,5 +1,14 @@
 #camera_project.py
+
+#loop to get camera data
+#if camera data is within a certain range:
+#   1. take photo
+#   2. upload photo
+#sleep to wait for door to close/so we don't spam photos
+
+
 import time
+import datetime
 import boto3
 
 s3 = boto3.resource('s3')
@@ -23,7 +32,8 @@ def main():
             photo = open(fileName, 'rb')
             #you can change the key to change the upload name
             #makes it easier to sort?
-            s3.Bucket(bucketName).put_object(Key=fileName,Body=photo )
+            keyName = fileName +'-'+ datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+            s3.Bucket(bucketName).put_object(Key=keyName,Body=photo )
 
         #time.sleep(5) # sleep for 5 seconds
 
