@@ -10,6 +10,9 @@ camera = PiCamera()
 camera.hflip = True
 camera.vflip = True
 
+import boto3
+
+s3 = boto3.resource('s3')
 
 #
 # See http://www.wrightfully.com/garagepi-my-raspberry-pi-playground
@@ -102,20 +105,31 @@ try:
     distance = sensor.readDistance()
     if distance < NOTIFY:
       print "    Take picture"
+      
+      #find current date and time
       str1 = datetime.datetime.now()
       str1 = str1.strftime('%m_%d_%Y_%H_%M_%S')
       str2 = "/home/pi/Desktop/"
       str3 = ".jpg"
       str1 = str2 + str1
-      str1 = str1 + str3
+      filename = str1 + str3
+      
+      #take picture
       camera.start_preview()
       sleep(5)
-      camera.capture(str1)
+      camera.capture(filename)
       camera.stop_preview()
-      led.turnOnDoorLed()
+      
+      #AWS
+      bucketName = 'tchen44-test'
+      photo = open(fileName, 'rb')
+      keyName = fileName +'-'+ datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d %H:%M:%S')
+      s3.Bucket(bucketName).put_object(Key=keyName,Body=photo )
+      
+      #led.turnOnDoorLed()
     else:
       print "    Nothing too close"
-      led.turnOffDoorLed()
+      #led.turnOffDoorLed()
     
     time.sleep(SAMPLE_SPEED)
 except KeyboardInterrupt:
