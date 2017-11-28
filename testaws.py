@@ -160,7 +160,7 @@ try:
       #'''
 
       #variable to test if there is a match
-      isSame = false
+      isSame = False
 
       targetFile=filename #temp file
       sourceFile='CHANGETHIS' #Master photo in bucket to compare to
@@ -172,16 +172,16 @@ try:
           TargetImage={'S3Object':{'Bucket':bucketName,'Name':targetFile}})
 
       for faceMatch in response['FaceMatches']:
+          isSame = True
           position = faceMatch['Face']['BoundingBox']
           confidence = str(faceMatch['Face']['Confidence'])
           print('The face at ' +
               str(position['Left']) + ' ' +
               str(position['Top']) +
               ' matches with ' + confidence + '% confidence')
-              isSame = true
       #'''
 
-      if isSame = false:
+      if isSame = False:
           #messaging
           #'''
           # Create an SNS client
