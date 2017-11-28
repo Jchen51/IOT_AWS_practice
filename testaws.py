@@ -111,13 +111,13 @@ try:
       str1 = str1.strftime('%m_%d_%Y_%H_%M_%S')
       str2 = "/home/pi/Desktop/pics/"
       str3 = ".jpg"
-      str4 = str1 + str3
+      str4 = str1 + str3 #name to perma upload
       str1 = str2 + str1
       str1 = str1 + str3
 
       #using set jpg name for now
       #filename = str1 + str3
-      #filename = "newPhoto.jpg"
+      filename = "newPhoto.jpg"
 
       #take picture
       camera.start_preview()
@@ -130,8 +130,6 @@ try:
 
       s3 = boto3.resource('s3')
 
-
-
       #s3 = boto3.client('s3',aws_access_key_id='ACCESS_KEY',aws_secret_access_key='SECRET_KEY')
       #response=s3.get_object(Bucket='BUCKET',Key='KEY')
 
@@ -140,10 +138,10 @@ try:
 
       #Upload Photo
       photo = open(str1, 'rb')
-      s3.Bucket(bucketName).put_object(Key=str4,Body=photo )
+      s3.Bucket(bucketName).put_object(Key=filename,Body=photo ) #want this one to overwrite
 
       #simple recognition
-      #'''
+      '''
 
       #fileName='newPhoto.jpg'
       client=boto3.client('rekognition','us-west-2')
@@ -156,7 +154,52 @@ try:
               + ' and ' + str(faceDetail['AgeRange']['High']) + ' years old')
           print('Here are the other attributes:')
           print(json.dumps(faceDetail, indent=4, sort_keys=True))
+      '''
+
+      #comparison
       #'''
+
+      #variable to test if there is a match
+      isSame = false
+
+      targetFile=filename #temp file
+      sourceFile='CHANGETHIS' #Master photo in bucket to compare to
+
+      client=boto3.client('rekognition','us-west-2')
+
+      response=client.compare_faces(SimilarityThreshold=70,
+          SourceImage={'S3Object':{'Bucket':bucketName,'Name':sourceFile}},
+          TargetImage={'S3Object':{'Bucket':bucketName,'Name':targetFile}})
+
+      for faceMatch in response['FaceMatches']:
+          position = faceMatch['Face']['BoundingBox']
+          confidence = str(faceMatch['Face']['Confidence'])
+          print('The face at ' +
+              str(position['Left']) + ' ' +
+              str(position['Top']) +
+              ' matches with ' + confidence + '% confidence')
+              isSame = true
+      #'''
+
+      if isSame = false:
+          #messaging
+          #'''
+          # Create an SNS client
+          client = boto3.client('sns')
+          # Send your sms message.
+
+          ############### DO NOT UNCOMMENT UNLESS IN DEMO, LIMITED USE ONLY ################
+          #client.publish(PhoneNumber="+16508238825", Message="Possible Intruder detected")
+          ##################################################################################
+
+          print('Possible Intruder detected')
+
+          #'''
+          #upload photo permanently
+          photo = open(str1, 'rb')
+          s3.Bucket(bucketName).put_object(Key=str3,Body=photo ) #want this one to overwrite
+
+
 
       ########################################################################
 
